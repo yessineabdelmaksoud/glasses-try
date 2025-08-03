@@ -14,7 +14,7 @@ PROJECT STRUCTURE:
 ------------------
 - Root level configuration files (package.json, webpack.config.js, README.md)
 - src/ - Source code directory containing all application logic
-- 3d/ - 3D model assets for glasses
+- 3d/Models/ - 3D model assets for glasses organized by model type
 - js/ - JavaScript modules for core functionality
 - video/ - Sample video files for testing
 

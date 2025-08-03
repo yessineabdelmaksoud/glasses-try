@@ -12,15 +12,21 @@ compatibility. The directory is organized by different glasses types and styles.
 DIRECTORY STRUCTURE:
 --------------------
 
-black-glasses/
-├── scene.gltf         - Main GLTF model file with scene description
-├── scene.bin          - Binary data containing geometry and animation data
-└── textures/          - Texture assets for the 3D model
-    ├── Handles_baseColor.jpeg        - Base color texture for glasses handles
-    └── Handles_metallicRoughness.png - PBR material properties
-
-glasses/
-└── scene.gltf         - Alternative glasses model (basic version)
+Models/
+└── glasses/
+    ├── black/
+    │   ├── black.gltf         - Black glasses model file
+    │   ├── black.bin          - Binary data for black glasses
+    │   ├── Image_0.jpg        - Black glasses base color texture
+    │   └── Image_1.png        - Black glasses material properties
+    ├── brown/
+    │   ├── brown.gltf         - Brown glasses model file
+    │   └── [associated textures and binary files]
+    └── grey/
+        ├── grey.gltf          - Grey glasses model file
+        ├── grey.bin           - Binary data for grey glasses
+        ├── Image_0.jpg        - Grey glasses base color texture
+        └── Image_1.png        - Grey glasses material properties
 
 FILE FORMATS AND PURPOSES:
 --------------------------
@@ -83,12 +89,13 @@ QUALITY CONSIDERATIONS:
 
 ADDING NEW MODELS:
 ------------------
-To add new glasses models:
-1. Create new folder in 3d/ directory
-2. Export model in GLTF format with textures
-3. Ensure proper orientation (front-facing)
-4. Update glasses.js to reference new model path
-5. Test scaling and positioning with various face shapes
+To add new glasses colors:
+1. Create new folder in 3d/Models/glasses/[color-name]/ directory
+2. Add color-specific GLTF file named [color-name].gltf
+3. Include associated textures and binary files
+4. Ensure proper orientation (front-facing)
+5. Update glasses.js to reference new color path (e.g., `${PUBLIC_PATH}/3d/Models/glasses/[color-name]/[color-name].gltf`)
+6. Test scaling and positioning with various face shapes
 
 REVIEW:
 -------

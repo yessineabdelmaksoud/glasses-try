@@ -38,7 +38,7 @@ FILES IN THIS DIRECTORY:
 
 SUBDIRECTORIES:
 ---------------
-- 3d/ - Contains 3D model assets (GLTF files and textures)
+- 3d/Models/ - Contains 3D model assets (GLTF files and textures) organized by model type
 - js/ - Core JavaScript modules organized by functionality
 - video/ - Sample video files for testing and demo purposes
 
