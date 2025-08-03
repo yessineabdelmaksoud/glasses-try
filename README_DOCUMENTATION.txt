@@ -16,7 +16,6 @@ PROJECT STRUCTURE:
 - src/ - Source code directory containing all application logic
 - 3d/Models/ - 3D model assets for glasses organized by model type
 - js/ - JavaScript modules for core functionality
-- video/ - Sample video files for testing
 
 TECHNOLOGY STACK:
 -----------------
@@ -29,7 +28,7 @@ KEY FEATURES:
 -------------
 1. Real-time face detection using MediaPipe
 2. 3D glasses overlay with accurate positioning and rotation
-3. Support for both camera and video input
+3. Camera input for live face tracking
 4. Responsive canvas rendering
 5. Optimized for performance on older hardware
 

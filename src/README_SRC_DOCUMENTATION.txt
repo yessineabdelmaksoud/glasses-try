@@ -21,9 +21,9 @@ FILES IN THIS DIRECTORY:
    - Purpose: Main application entry point and orchestrator
    - Functionality:
      * Imports all necessary modules and dependencies
-     * Creates the main UI template with video container and canvas
+     * Creates the main UI template with container and canvas
      * Initializes core components (SceneManager, FacemeshLandmarksProvider)
-     * Handles user choice between camera and video input
+     * Sets up camera input for face detection
      * Sets up the main animation loop
      * Coordinates data flow between face detection and 3D rendering
    - Key Features:
@@ -40,17 +40,15 @@ SUBDIRECTORIES:
 ---------------
 - 3d/Models/ - Contains 3D model assets (GLTF files and textures) organized by model type
 - js/ - Core JavaScript modules organized by functionality
-- video/ - Sample video files for testing and demo purposes
 
 DATA FLOW:
 ----------
 index.js orchestrates the entire application:
-1. User selects input source (camera or video)
-2. Video frames are captured and sent to MediaPipe
-3. Face landmarks are detected and processed
-4. 3D scene is updated with new landmark data
-5. Glasses are positioned and rendered on the face
-6. Animation loop continues for real-time updates
+1. Camera frames are captured and sent to MediaPipe
+2. Face landmarks are detected and processed
+3. 3D scene is updated with new landmark data
+4. Glasses are positioned and rendered on the face
+5. Animation loop continues for real-time updates
 
 ARCHITECTURE PATTERN:
 --------------------

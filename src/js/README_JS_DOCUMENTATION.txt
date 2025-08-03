@@ -22,14 +22,15 @@ FILES IN THIS DIRECTORY:
      * Calls onFrame callback for each captured frame
    - Dependencies: @mediapipe/camera_utils
 
-2. video_frame_provider.js
-   - Purpose: Handles video file input as alternative to camera
-   - Class: VideoFrameProvider
+2. camera_frame_provider.js
+   - Purpose: Handles real-time camera input for face detection
+   - Class: CameraFrameProvider
    - Functionality:
-     * Manages video element playback
-     * Provides frame-by-frame processing capability
-     * Implements same interface as CameraFrameProvider
-     * Supports start/stop controls for consistent API
+     * Wraps MediaPipe Camera utility for video capture
+     * Configures camera settings (1280x720 resolution)
+     * Provides start/stop controls for camera stream
+     * Calls onFrame callback for each captured frame
+   - Dependencies: @mediapipe/camera_utils
 
 3. public_path.js
    - Purpose: Centralized path configuration for assets
@@ -45,15 +46,14 @@ three_components/ - 3D graphics and rendering components
 
 ARCHITECTURE PATTERN:
 --------------------
-- Provider Pattern: CameraFrameProvider and VideoFrameProvider implement 
-  the same interface, allowing seamless switching between input sources
+- Provider Pattern: CameraFrameProvider handles camera input with consistent interface
 - Facade Pattern: Simplifies complex MediaPipe camera setup
 - Configuration Pattern: Centralized path management
 - Dependency Injection: Components receive callbacks rather than hard dependencies
 
 DATA FLOW:
 ----------
-1. Frame providers capture video data (camera or file)
+1. Camera provider captures video data from camera
 2. Frames are passed to the main application via callbacks
 3. Main app forwards frames to face detection pipeline
 4. Results flow back through the callback chain
@@ -61,9 +61,8 @@ DATA FLOW:
 
 DESIGN BENEFITS:
 ----------------
-- Interchangeable input sources without code changes
 - Clean separation between input handling and processing
-- Consistent error handling across different input types
+- Consistent error handling for camera access
 - Easy testing with mock providers
 
 REVIEW:
