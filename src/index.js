@@ -1,6 +1,5 @@
 import "./styles.css";
 import { PUBLIC_PATH } from './js/public_path';
-import { VideoFrameProvider } from './js/video_frame_provider';
 import { CameraFrameProvider } from './js/camera_frame_provider';
 import { FacemeshLandmarksProvider } from './js/facemesh/landmarks_provider';
 import { SceneManager } from "./js/three_components/scene_manager";
@@ -55,20 +54,12 @@ async function main() {
   sceneManager = new SceneManager(canvas, debug, useOrtho);
   facemeshLandmarksProvider = new FacemeshLandmarksProvider(onLandmarks);
 
-  if (confirm("Use Camera?")) {
-    const video = document.createElement("video");
-    video.setAttribute("playsinline", "");
-    video.style.display = "none"; // caché
-    document.body.appendChild(video);
-    videoFrameProvider = new CameraFrameProvider(video, onFrame);
-  } else {
-    const video = document.createElement("video");
-    video.setAttribute("playsinline", "");
-    video.src = `${PUBLIC_PATH}/video/videoplayback2.mp4`;
-    video.style.display = "none"; // caché
-    document.body.appendChild(video);
-    videoFrameProvider = new VideoFrameProvider(video, onFrame);
-  }
+  // Only use camera input
+  const video = document.createElement("video");
+  video.setAttribute("playsinline", "");
+  video.style.display = "none";
+  document.body.appendChild(video);
+  videoFrameProvider = new CameraFrameProvider(video, onFrame);
   
   await facemeshLandmarksProvider.initialize();
   videoFrameProvider.start();
