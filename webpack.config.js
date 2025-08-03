@@ -5,7 +5,10 @@ const CopyPlugin = require("copy-webpack-plugin");
 
 const config = {
   mode: process.env.NODE_ENV || 'development',
-  entry: './src/index.js',
+  entry: {
+    main: './src/index.js',
+    static: './src/image-to-image/static_image_processor.js'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].[contenthash].js',
@@ -32,6 +35,12 @@ const config = {
     new HtmlWebpackPlugin({
       template: 'src/index.html',
       filename: 'index.html',
+      chunks: ['main']
+    }),
+    new HtmlWebpackPlugin({
+      template: 'src/static.html',
+      filename: 'static.html',
+      chunks: ['static']
     }),
     new CopyPlugin({
       patterns: [

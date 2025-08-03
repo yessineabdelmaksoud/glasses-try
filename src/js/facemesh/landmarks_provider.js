@@ -9,15 +9,36 @@ export class FacemeshLandmarksProvider {
   }
 
   send(image) {
+    console.log('Envoi d\'image à MediaPipe:', {
+      type: image.constructor.name,
+      width: image.width,
+      height: image.height,
+      tagName: image.tagName
+    });
+    
     return this.faceMesh.send({image: image});
   }
 
   onResults({ image, multiFaceLandmarks }) {
-    if (image != null && multiFaceLandmarks != null) {
-      multiFaceLandmarks = transformLandmarks(multiFaceLandmarks[0]);
+    console.log('onResults appelé:', { 
+      hasImage: image != null, 
+      facesDetected: multiFaceLandmarks ? multiFaceLandmarks.length : 0 
+    });
+    
+    if (image != null && multiFaceLandmarks != null && multiFaceLandmarks.length > 0) {
+      const transformedLandmarks = transformLandmarks(multiFaceLandmarks[0]);
+      console.log('Landmarks transformés, nombre de points:', transformedLandmarks ? transformedLandmarks.length : 0);
+      
       this.callback({
         image: image,
-        landmarks: multiFaceLandmarks
+        landmarks: transformedLandmarks
+      });
+    } else {
+      console.log('Pas de visage détecté dans cette image');
+      // Appeler le callback avec null pour indiquer qu'aucun visage n'a été détecté
+      this.callback({
+        image: image,
+        landmarks: null
       });
     }
   }
@@ -25,21 +46,27 @@ export class FacemeshLandmarksProvider {
   async initialize() {
     let onResults = this.onResults.bind(this);
 
+    console.log('Initialisation de FaceMesh avec PUBLIC_PATH:', PUBLIC_PATH);
+    
     this.faceMesh = new FaceMesh({locateFile: (file) => {
       let url =  `${PUBLIC_PATH}/mediapipe/${file}`;
+      console.log('Chargement du fichier MediaPipe:', file, '-> URL:', url);
       return url
     }});
   
     this.faceMesh.setOptions({
       maxNumFaces: 1,
       refineLandmarks: true,
-      minDetectionConfidence: 0.5,
-      minTrackingConfidence: 0.5,
-      useCpuInference: true,
+      minDetectionConfidence: 0.3,
+      minTrackingConfidence: 0.3,
+      useCpuInference: false, // Utiliser GPU si disponible pour de meilleures performances
+      selfieMode: false,
     });
   
     this.faceMesh.onResults(onResults);
   
+    console.log('Initialisation de MediaPipe FaceMesh...');
     await this.faceMesh.initialize();
+    console.log('MediaPipe FaceMesh initialisé avec succès');
   }
 }
