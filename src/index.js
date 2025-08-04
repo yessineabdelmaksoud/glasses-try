@@ -1,6 +1,5 @@
 import "./styles.css";
 import { PUBLIC_PATH } from './js/public_path';
-import { VideoFrameProvider } from './js/video_frame_provider';
 import { CameraFrameProvider } from './js/camera_frame_provider';
 import { FacemeshLandmarksProvider } from './js/facemesh/landmarks_provider';
 import { SceneManager } from "./js/three_components/scene_manager";
@@ -8,10 +7,10 @@ import { SceneManager } from "./js/three_components/scene_manager";
 const template = `
 <div class="video-container">
   <span class="loader">
-    Loading ...
+    Loading...
   </span>
   <div>
-    <h2>Processed Video</h2>
+    <h2>Live Glasses Try-On</h2>
     <canvas class="output_canvas"></canvas>
   </div>
 </div>
@@ -30,7 +29,7 @@ async function main() {
 
   let sceneManager;
   let facemeshLandmarksProvider;
-  let videoFrameProvider;
+  let cameraFrameProvider;
 
   const onLandmarks = ({image, landmarks}) => {
     sceneManager.onLandmarks(image, landmarks);
@@ -40,38 +39,31 @@ async function main() {
     try {
       await facemeshLandmarksProvider.send(video);
     } catch (e) {
-      alert("Not Supported on your device")
-      console.error(e);
-      videoFrameProvider.stop();      
+      console.error("Camera not supported on your device:", e);
+      cameraFrameProvider.stop();      
     }
   }
 
   function animate () {
     requestAnimationFrame(animate);
-    sceneManager.resize(800, 500); // taille par défaut, ajuste si nécessaire
+    sceneManager.resize(800, 500); // Default size, adjust if needed
     sceneManager.animate();
   }
 
   sceneManager = new SceneManager(canvas, debug, useOrtho);
   facemeshLandmarksProvider = new FacemeshLandmarksProvider(onLandmarks);
 
-  if (confirm("Use Camera?")) {
-    const video = document.createElement("video");
-    video.setAttribute("playsinline", "");
-    video.style.display = "none"; // caché
-    document.body.appendChild(video);
-    videoFrameProvider = new CameraFrameProvider(video, onFrame);
-  } else {
-    const video = document.createElement("video");
-    video.setAttribute("playsinline", "");
-    video.src = `${PUBLIC_PATH}/video/videoplayback2.mp4`;
-    video.style.display = "none"; // caché
-    document.body.appendChild(video);
-    videoFrameProvider = new VideoFrameProvider(video, onFrame);
-  }
+  // Create video element for camera
+  const video = document.createElement("video");
+  video.setAttribute("playsinline", "");
+  video.style.display = "none"; // Hidden
+  document.body.appendChild(video);
+  
+  // Use camera only (removed video file support)
+  cameraFrameProvider = new CameraFrameProvider(video, onFrame);
   
   await facemeshLandmarksProvider.initialize();
-  videoFrameProvider.start();
+  cameraFrameProvider.start();
 
   animate();
 

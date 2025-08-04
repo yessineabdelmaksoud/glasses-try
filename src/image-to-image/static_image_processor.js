@@ -6,33 +6,33 @@ import { SceneManager } from '../js/three_components/scene_manager';
 const template = `
 <div class="image-processor-container">
   <div class="upload-section">
-    <h2>Essayeur de Lunettes Virtuel</h2>
+    <h2>Virtual Glasses Try-On</h2>
     <div class="upload-area" id="uploadArea">
-      <p>Glissez une image ici ou cliquez pour sélectionner</p>
+      <p>Drag an image here or click to select</p>
       <input type="file" id="imageInput" accept="image/*" hidden>
     </div>
-    <button id="processBtn" disabled>Traiter l'Image</button>
+    <button id="processBtn" disabled>Process Image</button>
   </div>
   
   <div class="processing-section" style="display: none;">
-    <span class="loader">Traitement en cours...</span>
+    <span class="loader">Processing...</span>
   </div>
   
   <div class="result-section" style="display: none;">
-    <h3>Résultat</h3>
+    <h3>Result</h3>
     <div class="image-comparison">
       <div class="original-image">
-        <h4>Image Originale</h4>
+        <h4>Original Image</h4>
         <img id="originalImg" alt="Original">
       </div>
       <div class="processed-image">
-        <h4>Avec Lunettes</h4>
+        <h4>With Glasses</h4>
         <canvas class="output_canvas"></canvas>
       </div>
     </div>
     <div class="action-buttons">
-      <button id="downloadBtn">Télécharger</button>
-      <button id="newImageBtn">Nouvelle Image</button>
+      <button id="downloadBtn">Download</button>
+      <button id="newImageBtn">New Image</button>
     </div>
   </div>
 </div>
@@ -105,14 +105,14 @@ class StaticImageProcessor {
 
   handleFile(file) {
     if (!file.type.startsWith('image/')) {
-      alert('Veuillez sélectionner un fichier image valide.');
+      alert('Please select a valid image file.');
       return;
     }
 
     this.selectedFile = file;
     this.processBtn.disabled = false;
     
-    // Preview de l'image
+    // Image preview
     const reader = new FileReader();
     reader.onload = (e) => {
       this.uploadArea.innerHTML = `<img src="${e.target.result}" style="max-width: 200px; max-height: 200px;">`;
@@ -249,8 +249,8 @@ class StaticImageProcessor {
       }, 500);
 
     } catch (error) {
-      console.error('Erreur lors du traitement:', error);
-      alert('Erreur lors du traitement de l\'image. Veuillez réessayer.');
+      console.error('Processing error:', error);
+      alert('Error processing the image. Please try again.');
       this.showSection('upload');
       this.isProcessing = false;
     }
