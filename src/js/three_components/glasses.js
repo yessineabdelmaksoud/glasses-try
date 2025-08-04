@@ -25,9 +25,17 @@ export class Glasses {
     this.loadGlasses();
   }
 
-  async loadGlasses() { 
-    this.glasses = await loadModel( `${PUBLIC_PATH}/3d/black-glasses/scene.gltf` );
-    console.log('[Glasses] Model loaded:', this.glasses);
+  async loadGlasses(path) {
+    // Use the provided path, or fall back to a default model for features like the static image processor.
+    const modelPath = path || `${PUBLIC_PATH}/3d/Models/glasses/grey/grey.gltf`;
+
+    // If glasses are already in the scene, remove them before loading a new one
+    if (this.glasses) {
+      this.scene.remove(this.glasses);
+    }
+    
+    this.glasses = await loadModel(modelPath);
+    console.log('[Glasses] Model loaded:', modelPath);
 
     // scale glasses
     const bbox = new THREE.Box3().setFromObject(this.glasses);
