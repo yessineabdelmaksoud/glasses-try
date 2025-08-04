@@ -7,6 +7,14 @@ const template = `
 <div class="image-processor-container">
   <div class="upload-section">
     <h2>Virtual Glasses Try-On</h2>
+    
+    <div class="static-glasses-selector">
+      <h3>Choose Your Glasses</h3>
+      <div class="static-glasses-buttons" id="staticGlassesButtons">
+        <!-- Buttons will be added dynamically -->
+      </div>
+    </div>
+    
     <div class="upload-area" id="uploadArea">
       <p>Drag an image here or click to select</p>
       <input type="file" id="imageInput" accept="image/*" hidden>
@@ -40,6 +48,28 @@ const template = `
 
 document.querySelector("#app").innerHTML = template;
 
+// Available glasses models (same as main interface)
+const availableGlasses = [
+  {
+    id: 1,
+    name: 'Grey',
+    color: 'grey',
+    path: '/3d/Models/glasses/grey/grey.gltf'
+  },
+  {
+    id: 2,
+    name: 'Black',
+    color: 'black', 
+    path: '/3d/Models/glasses/black/black.gltf'
+  },
+  {
+    id: 3,
+    name: 'Brown',
+    color: 'brown',
+    path: '/3d/Models/glasses/brown/brown.gltf'
+  }
+];
+
 class StaticImageProcessor {
   constructor() {
     this.selectedFile = null;
@@ -47,9 +77,11 @@ class StaticImageProcessor {
     this.facemeshLandmarksProvider = null;
     this.imageFrameProvider = null;
     this.isProcessing = false;
+    this.currentGlassesId = 1; // Default to Grey glasses
     
     this.initializeElements();
     this.setupEventListeners();
+    this.createGlassesSelector();
   }
 
   initializeElements() {
@@ -79,6 +111,45 @@ class StaticImageProcessor {
     this.processBtn.addEventListener('click', this.processImage.bind(this));
     this.downloadBtn.addEventListener('click', this.downloadResult.bind(this));
     this.newImageBtn.addEventListener('click', this.resetProcessor.bind(this));
+  }
+
+  createGlassesSelector() {
+    const glassesButtons = document.getElementById('staticGlassesButtons');
+    
+    availableGlasses.forEach(glasses => {
+      const button = document.createElement('button');
+      button.className = 'static-glasses-btn';
+      button.textContent = glasses.name;
+      button.setAttribute('data-glasses-id', glasses.id);
+      
+      // Set first button as active
+      if (glasses.id === this.currentGlassesId) {
+        button.classList.add('active');
+      }
+      
+      button.addEventListener('click', () => {
+        // Update active button
+        document.querySelectorAll('.static-glasses-btn').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        
+        // Update current glasses selection
+        this.currentGlassesId = glasses.id;
+        console.log('Selected glasses:', glasses.name);
+      });
+      
+      glassesButtons.appendChild(button);
+    });
+  }
+
+  getCurrentGlassesPath() {
+    const selectedGlasses = availableGlasses.find(g => g.id === this.currentGlassesId);
+    return selectedGlasses ? `${PUBLIC_PATH}${selectedGlasses.path}` : null;
+  }
+
+  showSection(section) {
+    this.uploadSection.style.display = section === 'upload' ? 'block' : 'none';
+    this.processingSection.style.display = section === 'processing' ? 'block' : 'none';
+    this.resultSection.style.display = section === 'result' ? 'block' : 'none';
   }
 
   handleDragOver(e) {
@@ -167,10 +238,10 @@ class StaticImageProcessor {
         if (typeof this.sceneManager.glasses.updateLandmarks === 'function') {
           console.log('Glasses.updateLandmarks is a function');
         } else {
-          console.warn('Glasses.updateLandmarks is NOT a function');
+          console.error('Glasses.updateLandmarks is NOT a function');
         }
       } else {
-        console.warn('SceneManager or glasses not initialized');
+        console.error('No glasses object found in sceneManager');
       }
       if (this.sceneManager && this.sceneManager.scene) {
         console.log('Scene children:', this.sceneManager.scene.children);
@@ -191,36 +262,14 @@ class StaticImageProcessor {
       // Update glasses
       this.sceneManager.glasses.update();
       
-      // Ensure dimensions are still correct before rendering
-      this.canvas.width = image.width;
-      this.canvas.height = image.height;
-      this.sceneManager.renderer.setSize(image.width, image.height, false);
-      
       // Render scene
       this.sceneManager.renderer.render(this.sceneManager.scene, this.sceneManager.camera);
-      
-      // Debug: Log after rendering
-      if (this.sceneManager && this.sceneManager.glasses) {
-        console.log('Glasses mesh after update:', this.sceneManager.glasses.mesh ? this.sceneManager.glasses.mesh : 'No mesh');
-      }
-      if (this.sceneManager && this.sceneManager.scene) {
-        console.log('Scene children after render:', this.sceneManager.scene.children);
-      }
-
-      // Log after rendering
-      console.log('Manual render completed. Canvas size:', this.canvas.width, this.canvas.height);
-      console.log('Renderer size:', this.sceneManager.renderer.domElement.width, this.sceneManager.renderer.domElement.height);
-      console.log('Canvas attributes:', this.canvas.getAttribute('width'), this.canvas.getAttribute('height'));
     };
 
     this.facemeshLandmarksProvider = new FacemeshLandmarksProvider(onLandmarks);
+    this.imageFrameProvider = new ImageFrameProvider(this.facemeshLandmarksProvider);
+    
     await this.facemeshLandmarksProvider.initialize();
-
-    this.onFrame = async (imageCanvas) => {
-      await this.facemeshLandmarksProvider.send(imageCanvas);
-    };
-
-    this.imageFrameProvider = new ImageFrameProvider(this.onFrame);
   }
 
   async processImage() {
@@ -232,17 +281,24 @@ class StaticImageProcessor {
     try {
       await this.initializeProcessors();
       
-      // Afficher l'image originale
+      // Load the selected glasses model
+      const selectedGlassesPath = this.getCurrentGlassesPath();
+      if (selectedGlassesPath && this.sceneManager && this.sceneManager.glasses) {
+        await this.sceneManager.glasses.loadGlasses(selectedGlassesPath);
+        console.log('Loaded selected glasses for processing:', selectedGlassesPath);
+      }
+      
+      // Show original image
       const reader = new FileReader();
       reader.onload = (e) => {
         this.originalImg.src = e.target.result;
       };
       reader.readAsDataURL(this.selectedFile);
 
-      // Traiter l'image
+      // Process the image
       const { width, height } = await this.imageFrameProvider.processImage(this.selectedFile);
       
-      // Attendre un peu pour que le rendu se termine
+      // Wait a bit for rendering to complete
       setTimeout(() => {
         this.showSection('result');
         this.isProcessing = false;
@@ -256,26 +312,20 @@ class StaticImageProcessor {
     }
   }
 
-  showSection(section) {
-    this.uploadSection.style.display = section === 'upload' ? 'block' : 'none';
-    this.processingSection.style.display = section === 'processing' ? 'block' : 'none';
-    this.resultSection.style.display = section === 'result' ? 'block' : 'none';
-  }
-
   downloadResult() {
     const link = document.createElement('a');
-    link.download = 'glasses-result.png';
-    link.href = this.canvas.toDataURL('image/png');
+    link.download = 'glasses-try-on-result.png';
+    link.href = this.canvas.toDataURL();
     link.click();
   }
 
   resetProcessor() {
     this.selectedFile = null;
     this.processBtn.disabled = true;
-    this.uploadArea.innerHTML = '<p>Glissez une image ici ou cliquez pour sélectionner</p>';
+    this.uploadArea.innerHTML = '<p>Drag an image here or click to select</p>';
     this.showSection('upload');
   }
 }
 
-// Initialiser l'application
+// Initialize the processor
 new StaticImageProcessor();

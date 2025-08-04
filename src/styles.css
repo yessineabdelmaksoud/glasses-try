@@ -92,6 +92,147 @@ body {
   display: block;
 }
 
+/* Glasses Selector Styles */
+.glasses-selector {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.glasses-selector h3 {
+  margin: 0 0 10px 0;
+  text-align: center;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.glasses-buttons {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.glasses-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 80px;
+  text-align: center;
+}
+
+.glasses-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.glasses-btn.active {
+  background: #007bff;
+  border-color: #007bff;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.4);
+}
+
+.glasses-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Static Image Glasses Selector */
+.static-glasses-selector {
+  position: relative;
+  margin: 20px 0;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.static-glasses-selector h3 {
+  margin: 0 0 15px 0;
+  text-align: center;
+  color: #fff;
+  font-size: 16px;
+}
+
+.static-glasses-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.static-glasses-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 100px;
+}
+
+.static-glasses-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.static-glasses-btn.active {
+  background: #28a745;
+  border-color: #28a745;
+  color: white;
+}
+
+/* Responsive design for glasses selector */
+@media screen and (max-width: 768px) {
+  .glasses-selector {
+    left: 10px;
+    right: 10px;
+    transform: none;
+    bottom: 10px;
+  }
+  
+  .glasses-buttons {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .glasses-btn {
+    flex: 1;
+    min-width: 70px;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .static-glasses-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .static-glasses-btn {
+    width: 100%;
+  }
+}
+
 /* column wise on mobile */
 .video-container {
   display: flex;

@@ -14,9 +14,80 @@ const template = `
     <canvas class="output_canvas"></canvas>
   </div>
 </div>
+
+<div class="glasses-selector" id="glassesSelector" style="display: none;">
+  <h3>Choose Your Glasses</h3>
+  <div class="glasses-buttons" id="glassesButtons">
+    <!-- Buttons will be added dynamically -->
+  </div>
+</div>
 `;
 
 document.querySelector("#app").innerHTML = template;
+
+// Available glasses models (this will later come from database)
+const availableGlasses = [
+  {
+    id: 1,
+    name: 'Grey',
+    color: 'grey',
+    path: '/3d/Models/glasses/grey/grey.gltf'
+  },
+  {
+    id: 2,
+    name: 'Black',
+    color: 'black', 
+    path: '/3d/Models/glasses/black/black.gltf'
+  },
+  {
+    id: 3,
+    name: 'Brown',
+    color: 'brown',
+    path: '/3d/Models/glasses/brown/brown.gltf'
+  }
+];
+
+let currentGlassesId = 1; // Default to Grey glasses
+let sceneManager;
+
+function createGlassesSelector() {
+  const glassesButtons = document.getElementById('glassesButtons');
+  
+  availableGlasses.forEach(glasses => {
+    const button = document.createElement('button');
+    button.className = 'glasses-btn';
+    button.textContent = glasses.name;
+    button.setAttribute('data-glasses-id', glasses.id);
+    
+    // Set first button as active
+    if (glasses.id === currentGlassesId) {
+      button.classList.add('active');
+    }
+    
+    button.addEventListener('click', () => {
+      // Update active button
+      document.querySelectorAll('.glasses-btn').forEach(btn => btn.classList.remove('active'));
+      button.classList.add('active');
+      
+      // Load new glasses model
+      currentGlassesId = glasses.id;
+      loadGlassesModel(glasses.path);
+    });
+    
+    glassesButtons.appendChild(button);
+  });
+  
+  // Show the selector
+  document.getElementById('glassesSelector').style.display = 'block';
+}
+
+function loadGlassesModel(glassesPath) {
+  if (sceneManager && sceneManager.glasses) {
+    const fullPath = `${PUBLIC_PATH}${glassesPath}`;
+    sceneManager.glasses.loadGlasses(fullPath);
+    console.log('Loading glasses:', fullPath);
+  }
+}
 
 async function main() {
 
@@ -52,6 +123,9 @@ async function main() {
 
   sceneManager = new SceneManager(canvas, debug, useOrtho);
   facemeshLandmarksProvider = new FacemeshLandmarksProvider(onLandmarks);
+
+  // Create glasses selector
+  createGlassesSelector();
 
   // Create video element for camera
   const video = document.createElement("video");
