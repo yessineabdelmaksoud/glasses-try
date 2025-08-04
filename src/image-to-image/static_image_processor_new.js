@@ -222,7 +222,7 @@ class StaticImageProcessor {
       this.canvas.style.width = `${image.width}px`;
       this.canvas.style.height = `${image.height}px`;
       
-      // Set proper dimensions for SceneManager
+      // Update scene manager with dimensions first, then image data
       this.sceneManager.resize(image.width, image.height);
       
       // Force renderer to set the correct size before processing landmarks
@@ -231,14 +231,27 @@ class StaticImageProcessor {
       // Now set the landmarks and image data
       this.sceneManager.onLandmarks(image, landmarks);
       
-      // Update camera properly for static image (this was missing before)
-      this.sceneManager.updateCamera();
+      // Debug: Log landmarks and glasses state
+      console.log('Landmarks sample:', landmarks && landmarks.length > 0 ? landmarks[0] : 'none');
+      if (this.sceneManager && this.sceneManager.glasses) {
+        console.log('Glasses object:', this.sceneManager.glasses);
+        if (typeof this.sceneManager.glasses.updateLandmarks === 'function') {
+          console.log('Glasses.updateLandmarks is a function');
+        } else {
+          console.error('Glasses.updateLandmarks is NOT a function');
+        }
+      } else {
+        console.error('No glasses object found in sceneManager');
+      }
+      if (this.sceneManager && this.sceneManager.scene) {
+        console.log('Scene children:', this.sceneManager.scene.children);
+      }
+
+      // Verify dimensions are correct
+      console.log('Before animate - Canvas:', this.canvas.width, this.canvas.height);
+      console.log('Before animate - Renderer:', this.sceneManager.renderer.domElement.width, this.sceneManager.renderer.domElement.height);
       
-      // Update dimensions for glasses and video background (this was missing before)
-      this.sceneManager.glasses.updateDimensions(image.width, image.height);
-      this.sceneManager.videoBg.updateDimensions(image.width, image.height);
-      
-      // Call rendering components individually (without problematic resizeRendererToDisplaySize)
+      // Call animate components individually to avoid problematic resizeRendererToDisplaySize
       if (this.sceneManager.controls) {
         this.sceneManager.controls.update();
       }
@@ -251,24 +264,10 @@ class StaticImageProcessor {
       
       // Render scene
       this.sceneManager.renderer.render(this.sceneManager.scene, this.sceneManager.camera);
-      
-      console.log('✅ Used enhanced rendering pipeline with proper camera and dimension updates');
     };
 
     this.facemeshLandmarksProvider = new FacemeshLandmarksProvider(onLandmarks);
-    
-    // Create proper onFrame callback for ImageFrameProvider
-    const onFrame = async (canvas) => {
-      console.log('📸 onFrame called for static image processing');
-      try {
-        await this.facemeshLandmarksProvider.send(canvas);
-      } catch (error) {
-        console.error('Error in facemesh processing:', error);
-        throw error;
-      }
-    };
-    
-    this.imageFrameProvider = new ImageFrameProvider(onFrame);
+    this.imageFrameProvider = new ImageFrameProvider(this.facemeshLandmarksProvider);
     
     await this.facemeshLandmarksProvider.initialize();
   }
@@ -280,24 +279,13 @@ class StaticImageProcessor {
     this.showSection('processing');
 
     try {
-      console.log('🚀 Starting image processing...');
       await this.initializeProcessors();
-      console.log('✅ Processors initialized');
       
       // Load the selected glasses model
       const selectedGlassesPath = this.getCurrentGlassesPath();
-      console.log('📍 Selected glasses path:', selectedGlassesPath);
-      
       if (selectedGlassesPath && this.sceneManager && this.sceneManager.glasses) {
-        console.log('🔄 Loading glasses model for static processing...');
         await this.sceneManager.glasses.loadGlasses(selectedGlassesPath);
-        console.log('✅ Glasses model loaded successfully for processing:', selectedGlassesPath);
-      } else {
-        console.warn('⚠️ Cannot load glasses - missing dependencies:', {
-          selectedGlassesPath: !!selectedGlassesPath,
-          sceneManager: !!this.sceneManager,
-          glasses: !!(this.sceneManager?.glasses)
-        });
+        console.log('Loaded selected glasses for processing:', selectedGlassesPath);
       }
       
       // Show original image
@@ -307,29 +295,18 @@ class StaticImageProcessor {
       };
       reader.readAsDataURL(this.selectedFile);
 
-      console.log('🖼️ Processing image with frame provider...');
       // Process the image
       const { width, height } = await this.imageFrameProvider.processImage(this.selectedFile);
-      console.log('✅ Image processed, dimensions:', { width, height });
       
       // Wait a bit for rendering to complete
       setTimeout(() => {
-        console.log('🎉 Processing complete, showing results');
         this.showSection('result');
         this.isProcessing = false;
       }, 500);
 
     } catch (error) {
-      console.error('❌ Processing error details:', {
-        error: error,
-        message: error.message,
-        stack: error.stack,
-        selectedFile: !!this.selectedFile,
-        sceneManager: !!this.sceneManager,
-        facemeshProvider: !!this.facemeshLandmarksProvider,
-        imageFrameProvider: !!this.imageFrameProvider
-      });
-      alert(`Error processing the image: ${error.message || 'Unknown error'}. Check console for details.`);
+      console.error('Processing error:', error);
+      alert('Error processing the image. Please try again.');
       this.showSection('upload');
       this.isProcessing = false;
     }

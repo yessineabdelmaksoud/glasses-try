@@ -5,13 +5,33 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { scaleLandmark } from '../facemesh/landmarks_helpers';
 
 function loadModel( file ) {
+  console.log('📂 loadModel called with file:', file);
   return new Promise( ( res, rej ) => {
       const loader = new GLTFLoader();
-      loader.load( file, function ( gltf ) {
-        res( gltf.scene );
-      }, undefined, function ( error ) {
+      console.log('🔄 Starting GLTF load...');
+      
+      loader.load( file, 
+        function ( gltf ) {
+          console.log('✅ GLTF loaded successfully:', {
+            file: file,
+            scene: gltf.scene,
+            animations: gltf.animations.length,
+            children: gltf.scene.children.length
+          });
+          res( gltf.scene );
+        }, 
+        function ( progress ) {
+          console.log('📈 Loading progress:', Math.round((progress.loaded / progress.total * 100)) + '%');
+        },
+        function ( error ) {
+          console.error('❌ GLTF loading failed:', {
+            file: file,
+            error: error,
+            message: error.message
+          });
           rej( error );
-      } );
+        } 
+      );
   });
 }
 
@@ -22,34 +42,69 @@ export class Glasses {
     this.height = height;
     this.needsUpdate = false;
     this.landmarks = null;
+    this.lastLoadedPath = null; // Track the last loaded model path
     this.loadGlasses();
   }
 
   async loadGlasses(path) {
-    // Use the provided path, or fall back to a default model for features like the static image processor.
-    const modelPath = path || `${PUBLIC_PATH}/3d/Models/glasses/grey/grey.gltf`;
-
-    // If glasses are already in the scene, remove them before loading a new one
-    if (this.glasses) {
-      this.scene.remove(this.glasses);
+    console.group('🔄 loadGlasses Method');
+    console.log('Input path:', path);
+    
+    // Safety check: ensure scene exists
+    if (!this.scene) {
+      console.error('❌ Cannot load glasses: scene is not available');
+      console.groupEnd();
+      throw new Error('Scene not available for glasses loading');
     }
     
-    this.glasses = await loadModel(modelPath);
-    console.log('[Glasses] Model loaded:', modelPath);
+    // Use the provided path, or fall back to a default model for features like the static image processor.
+    const modelPath = path || `${PUBLIC_PATH}/3d/Models/glasses/grey/grey.gltf`;
+    console.log('Final model path:', modelPath);
 
-    // scale glasses
-    const bbox = new THREE.Box3().setFromObject(this.glasses);
-    const size = bbox.getSize(new THREE.Vector3());
-    this.scaleFactor = size.x;
-
-    this.glasses.name = 'glasses';
-
-    // If landmarks are already present, trigger update
-    if (this.landmarks) {
-      console.log('[Glasses] Landmarks already present, updating glasses after model load.');
-      this.needsUpdate = true;
-      this.update();
+    // Remove ALL existing glasses from the scene (comprehensive cleanup)
+    try {
+      this.removeAllGlasses();
+    } catch (cleanupError) {
+      console.warn('⚠️ Error during glasses cleanup:', cleanupError);
+      // Continue anyway - the cleanup error shouldn't prevent loading new glasses
     }
+    
+    try {
+      console.log('📦 Starting model load...');
+      this.glasses = await loadModel(modelPath);
+      this.lastLoadedPath = modelPath; // Track successful loads
+      console.log('✅ Model loaded successfully:', this.glasses);
+      console.log('Model type:', this.glasses.type);
+      console.log('Model children:', this.glasses.children.length);
+
+      // scale glasses
+      const bbox = new THREE.Box3().setFromObject(this.glasses);
+      const size = bbox.getSize(new THREE.Vector3());
+      this.scaleFactor = size.x;
+      console.log('📏 Scale factor calculated:', this.scaleFactor);
+
+      this.glasses.name = 'glasses';
+      console.log('🏷️ Set glasses name to "glasses"');
+
+      // If landmarks are already present, trigger update
+      if (this.landmarks) {
+        console.log('👁️ Landmarks already present, updating glasses after model load.');
+        this.needsUpdate = true;
+        this.update();
+      } else {
+        console.log('⏳ No landmarks yet, will update when landmarks arrive');
+      }
+      
+      console.log('🎬 Adding glasses to scene...');
+      this.addGlasses();
+      console.log('Scene children after adding glasses:', this.scene.children.length);
+      
+    } catch (error) {
+      console.error('❌ Failed to load model:', error);
+      console.error('Model path that failed:', modelPath);
+    }
+    
+    console.groupEnd();
   }
 
   updateDimensions(width, height) {
@@ -149,6 +204,47 @@ export class Glasses {
 
   removeGlasses() {
     this.scene.remove(this.glasses);
+  }
+
+  removeAllGlasses() {
+    console.log('🧹 Comprehensive glasses cleanup started');
+    
+    // Safety check: ensure scene exists
+    if (!this.scene) {
+      console.log('⚠️ No scene available for cleanup');
+      return;
+    }
+    
+    console.log('Scene children before cleanup:', this.scene.children.length);
+    
+    // Remove the tracked glasses object
+    if (this.glasses) {
+      console.log('🗑️ Removing tracked glasses object');
+      this.scene.remove(this.glasses);
+      this.glasses = null;
+    }
+    
+    // Find and remove ALL objects named 'glasses' (in case there are duplicates)
+    const glassesObjects = [];
+    this.scene.traverse((child) => {
+      if (child.name === 'glasses') {
+        glassesObjects.push(child);
+      }
+    });
+    
+    if (glassesObjects.length > 0) {
+      console.log(`🗑️ Found ${glassesObjects.length} glasses objects by name, removing all`);
+      glassesObjects.forEach((glassesObj, index) => {
+        console.log(`  Removing glasses object ${index + 1}:`, glassesObj);
+        if (glassesObj.parent) {
+          glassesObj.parent.remove(glassesObj);
+        }
+      });
+    } else {
+      console.log('✅ No glasses objects found by name');
+    }
+    
+    console.log('Scene children after cleanup:', this.scene.children.length);
   }
 
   update() {
