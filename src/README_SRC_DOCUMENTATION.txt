@@ -1,68 +1,142 @@
-================================================================================
-                              SRC FOLDER DOCUMENTATION
-                            Main Source Code Directory
-================================================================================
+=============================================================================
+                          SRC FOLDER DOCUMENTATION
+=============================================================================
 
 OVERVIEW:
 ---------
-The src/ directory contains all the application source code, including the main
-entry point, HTML template, styling, and organized subdirectories for different
-functionality areas.
+The src folder is the main source directory for the Virtual Glasses Try-On application.
+It contains the entry points for both real-time video processing and static image 
+processing modes of the application. This folder orchestrates the user interface,
+camera integration, and coordinates between different components to provide an 
+interactive glasses try-on experience.
 
-FILES IN THIS DIRECTORY:
-------------------------
+FOLDER STRUCTURE:
+----------------
+- index.js: Main entry point for real-time video glasses try-on
+- index.html: HTML template for the video interface
+- static.html: HTML template for static image processing
+- styles.css: Main CSS styles for the video interface
+- static_styles.css: CSS styles for the static image interface
+- js/: JavaScript modules and components
+- 3d/: 3D models and related assets
+- image-to-image/: Static image processing components
 
-1. index.html
-   - Purpose: Basic HTML template for the application
-   - Content: Minimal structure with a single div container (#app)
-   - Role: Serves as the foundation where JavaScript dynamically creates the UI
+KEY FILES AND FUNCTIONS:
+-----------------------
 
-2. index.js
-   - Purpose: Main application entry point and orchestrator
-   - Functionality:
-     * Imports all necessary modules and dependencies
-     * Creates the main UI template with container and canvas
-     * Initializes core components (SceneManager, FacemeshLandmarksProvider)
-     * Sets up camera input for face detection
-     * Sets up the main animation loop
-     * Coordinates data flow between face detection and 3D rendering
-   - Key Features:
-     * Async initialization of MediaPipe models
-     * Error handling for unsupported devices
-     * Responsive canvas sizing (800x500 default)
+1. INDEX.JS (Real-time Video Interface):
+   Purpose: Main application entry point for live camera glasses try-on
+   
+   Key Functions:
+   - main(): Initializes the entire application
+     * Sets up Three.js scene manager
+     * Initializes MediaPipe face detection
+     * Creates camera frame provider
+     * Starts the animation loop
+     * Creates glasses selection UI
+   
+   - createGlassesSelector(): Dynamically creates glasses selection buttons
+     * Renders buttons for each available glasses model
+     * Handles click events to switch glasses
+     * Manages active button states
+     * Triggers model loading when selection changes
+   
+   - loadGlassesModel(glassesPath): Loads and applies new glasses model
+     * Constructs full path to glasses GLTF model
+     * Calls SceneManager to load the new glasses
+     * Handles loading errors gracefully
+   
+   - onLandmarks({image, landmarks}): Processes face detection results
+     * Receives image frame and facial landmarks from MediaPipe
+     * Passes data to SceneManager for 3D rendering
+   
+   - onFrame(video): Processes each video frame
+     * Sends video frames to face detection
+     * Handles camera errors and stops processing if needed
+   
+   - animate(): Main rendering loop
+     * Uses requestAnimationFrame for smooth 60fps rendering
+     * Resizes renderer and updates 3D scene
+     * Continuously renders the scene
 
-3. styles.css
-   - Purpose: Application styling and layout
-   - Scope: Global styles for the user interface
-   - Features: Responsive design, loading states, video container styling
+   Global Variables:
+   - sceneManager: Manages 3D scene, camera, and rendering
+   - facemeshLandmarksProvider: Handles face detection using MediaPipe
+   - cameraFrameProvider: Manages camera access and video frames
+   - availableGlasses: Array of glasses models with metadata
+   - currentGlassesId: Tracks currently selected glasses model
 
-SUBDIRECTORIES:
+2. INDEX.HTML:
+   Purpose: Basic HTML structure for the video interface
+   - Minimal HTML container with app div
+   - JavaScript bundle injection point
+   - Meta tags for responsive design
+
+3. STATIC.HTML:
+   Purpose: HTML structure for static image processing
+   - Similar to index.html but for static image mode
+   - Entry point for image upload interface
+
+WORKFLOW:
+---------
+1. Application Initialization:
+   - DOM content is injected via template string
+   - Three.js SceneManager is created with canvas element
+   - MediaPipe FaceMesh is initialized for face detection
+   - Camera access is requested and video stream starts
+   - Glasses selector UI is created after initialization
+
+2. Real-time Processing Loop:
+   - Camera captures video frames continuously
+   - Each frame is sent to MediaPipe for face detection
+   - When face is detected, landmarks are extracted
+   - Landmarks are passed to 3D scene for glasses positioning
+   - Three.js renders the scene with glasses overlay
+   - Process repeats at 60fps via requestAnimationFrame
+
+3. User Interaction:
+   - User clicks glasses selection buttons
+   - Button click triggers loadGlassesModel()
+   - New 3D model is loaded and replaces current glasses
+   - UI updates to show active selection
+   - Glasses immediately appear on detected face
+
+DEPENDENCIES:
+------------
+- Three.js: 3D graphics library for rendering glasses models
+- MediaPipe: Google's face detection and landmark extraction
+- WebGL: Hardware-accelerated graphics rendering
+- WebRTC: Camera access via getUserMedia API
+- ES6 Modules: Modern JavaScript module system
+- CSS3: Styling and responsive layout
+
+KEY LOGIC FLOWS:
 ---------------
-- 3d/Models/ - Contains 3D model assets (GLTF files and textures) organized by model type
-- js/ - Core JavaScript modules organized by functionality
+1. Initialization Sequence:
+   main() → SceneManager creation → MediaPipe init → Camera start → UI creation
 
-DATA FLOW:
+2. Frame Processing:
+   Camera frame → onFrame() → MediaPipe → onLandmarks() → 3D rendering
+
+3. Glasses Selection:
+   Button click → loadGlassesModel() → SceneManager.glasses.loadGlasses()
+
+4. Rendering Loop:
+   animate() → sceneManager.resize() → sceneManager.animate() → requestAnimationFrame
+
+CONFIGURATION:
+-------------
+- useOrtho: true (Uses orthographic camera for consistent scaling)
+- debug: false (Disables debug overlays)
+- Default size: 800x500 pixels
+- Default glasses: Grey (ID: 1)
+
+TO REVIEW:
 ----------
-index.js orchestrates the entire application:
-1. Camera frames are captured and sent to MediaPipe
-2. Face landmarks are detected and processed
-3. 3D scene is updated with new landmark data
-4. Glasses are positioned and rendered on the face
-5. Animation loop continues for real-time updates
-
-ARCHITECTURE PATTERN:
---------------------
-The src/ directory follows a modular architecture:
-- Single entry point (index.js) for coordination
-- Separated concerns with dedicated subdirectories
-- Event-driven communication between components
-- Asynchronous initialization for better user experience
-
-REVIEW:
--------
-The src/ directory is well-organized with clear separation of concerns. The main
-index.js file effectively orchestrates the complex interaction between computer
-vision and 3D graphics without becoming overly complex. The modular structure
-makes the codebase maintainable and extensible. The async/await pattern ensures
-smooth initialization, and error handling provides good user feedback for
-unsupported scenarios.
+1. Hard-coded available glasses array should be moved to external configuration
+2. Magic numbers (800, 500) for default size should be constants
+3. Console.group debug code in createGlassesSelector could be removed for production
+4. Error handling in main() could be more robust with try-catch blocks
+5. Global variables could be encapsulated in a class or module
+6. No validation for camera permissions or WebGL support
+7. Animation loop runs regardless of whether face is detected (performance consideration)
