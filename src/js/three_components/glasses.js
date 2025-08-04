@@ -25,8 +25,9 @@ export class Glasses {
     this.loadGlasses();
   }
 
-  async loadGlasses() {
-    this.glasses = await loadModel( `${PUBLIC_PATH}/3d/Models/glasses/grey/grey.gltf` );
+  async loadGlasses() { 
+    this.glasses = await loadModel( `${PUBLIC_PATH}/3d/black-glasses/scene.gltf` );
+    console.log('[Glasses] Model loaded:', this.glasses);
 
     // scale glasses
     const bbox = new THREE.Box3().setFromObject(this.glasses);
@@ -34,6 +35,13 @@ export class Glasses {
     this.scaleFactor = size.x;
 
     this.glasses.name = 'glasses';
+
+    // If landmarks are already present, trigger update
+    if (this.landmarks) {
+      console.log('[Glasses] Landmarks already present, updating glasses after model load.');
+      this.needsUpdate = true;
+      this.update();
+    }
   }
 
   updateDimensions(width, height) {
@@ -45,6 +53,12 @@ export class Glasses {
   updateLandmarks(landmarks) {
     this.landmarks = landmarks;
     this.needsUpdate = true;
+    // If glasses model is loaded, update immediately
+    if (this.glasses) {
+      this.update();
+    } else {
+      console.log('[Glasses] Model not loaded yet, will update after load.');
+    }
   }
 
   updateGlasses() {

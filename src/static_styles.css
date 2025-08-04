@@ -1,0 +1,119 @@
+.image-processor-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: Arial, sans-serif;
+  }
+  
+  .upload-section {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  .upload-area {
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    padding: 40px;
+    margin: 20px auto;
+    max-width: 400px;
+    cursor: pointer;
+    transition: border-color 0.3s;
+  }
+  
+  .upload-area:hover,
+  .upload-area.drag-over {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+  }
+  
+  .upload-area img {
+    border-radius: 10px;
+  }
+  
+  #processBtn {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  #processBtn:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+  }
+  
+  .processing-section {
+    text-align: center;
+    padding: 50px;
+  }
+  
+  .loader {
+    font-size: 18px;
+    color: #007bff;
+  }
+  
+  .result-section {
+    margin-top: 30px;
+  }
+  
+  .image-comparison {
+    display: flex;
+    gap: 30px;
+    justify-content: center;
+    align-items: flex-start;
+    margin: 30px 0;
+    flex-wrap: wrap;
+  }
+  
+  .original-image,
+  .processed-image {
+    flex: 1;
+    min-width: 300px;
+    text-align: center;
+  }
+  
+  .original-image img,
+  .processed-image canvas {
+    max-width: 100%;
+    height: auto;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+  }
+  
+  .action-buttons {
+    text-align: center;
+    margin-top: 20px;
+  }
+  
+  .action-buttons button {
+    margin: 0 10px;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+  }
+  
+  #downloadBtn {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  #newImageBtn {
+    background-color: #6c757d;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .image-comparison {
+      flex-direction: column;
+    }
+    
+    .original-image,
+    .processed-image {
+      min-width: 100%;
+    }
+  }
