@@ -7,7 +7,8 @@ const config = {
   mode: process.env.NODE_ENV || 'development',
   entry: {
     main: './src/index.js',
-    static: './src/image-to-image/static_image_processor.js'
+    static: './src/image-to-image/static_image_processor.js',
+    tryon: './src/tryon.js'
   },
   output: {
     path: path.resolve(__dirname, 'dist'),
@@ -41,6 +42,11 @@ const config = {
       template: 'src/static.html',
       filename: 'static.html',
       chunks: ['static']
+    }),
+    new HtmlWebpackPlugin({
+      template: 'src/tryon.html',
+      filename: 'tryon.html',
+      chunks: ['tryon']
     }),
     new CopyPlugin({
       patterns: [

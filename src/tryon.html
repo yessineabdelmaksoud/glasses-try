@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Virtual Glasses Try-On - Live Camera & Photo Upload</title>
+</head>
+<body>
+  <div id="app">
+    <div class="app-container">
+      <!-- Mode Selector -->
+      <div class="mode-selector">
+        <button class="mode-btn active" id="videomodeBtn" data-mode="video">
+          📹 Live Camera
+        </button>
+        <button class="mode-btn" id="imagemodeBtn" data-mode="image">
+          📷 Upload Photo
+        </button>
+      </div>
+
+      <!-- Video Mode Content -->
+      <div class="mode-content active" id="videoMode">
+        <div class="video-container">
+          <span class="loader">
+            Loading camera...
+          </span>
+          <div>
+            <h2>Live Glasses Try-On</h2>
+            <canvas class="output_canvas" id="videoCanvas"></canvas>
+          </div>
+        </div>
+
+        <div class="glasses-selector" id="videoGlassesSelector" style="display: none;">
+          <h3>Choose Your Glasses</h3>
+          <div class="glasses-buttons" id="videoGlassesButtons">
+            <!-- Buttons will be added dynamically -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Image Mode Content -->
+      <div class="mode-content" id="imageMode">
+        <div class="image-processor-container">
+          <div class="upload-section">
+            <h2>Photo Glasses Try-On</h2>
+            
+            <div class="static-glasses-selector">
+              <h3>Choose Your Glasses</h3>
+              <div class="static-glasses-buttons" id="imageGlassesButtons">
+                <!-- Buttons will be added dynamically -->
+              </div>
+            </div>
+            
+            <div class="upload-area" id="uploadArea">
+              <p>Drag an image here or click to select</p>
+              <input type="file" id="imageInput" accept="image/*" hidden>
+            </div>
+            <button id="processBtn" disabled>Process Image</button>
+          </div>
+          
+          <div class="processing-section" style="display: none;">
+            <span class="loader">Processing...</span>
+          </div>
+          
+          <div class="result-section" style="display: none;">
+            <h3>Result</h3>
+            <div class="image-comparison">
+              <div class="original-image">
+                <h4>Original Image</h4>
+                <img id="originalImg" alt="Original">
+              </div>
+              <div class="processed-image">
+                <h4>With Glasses</h4>
+                <canvas class="output_canvas" id="imageCanvas"></canvas>
+              </div>
+            </div>
+            <div class="action-buttons">
+              <button id="downloadBtn">Download</button>
+              <button id="newImageBtn">New Image</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
