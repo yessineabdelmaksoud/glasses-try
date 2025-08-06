@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download Test - Virtual Glasses Try-On</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        canvas {
+            border: 2px solid #ccc;
+            margin: 10px 0;
+            display: block;
+        }
+        button {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover:not(:disabled) {
+            background: #138496;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+        }
+        button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        .success {
+            background: #28a745 !important;
+        }
+        .error {
+            background: #dc3545 !important;
+        }
+        .info {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Download Functionality Test</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong> This page tests the download functionality for canvas images.
+            The canvas below contains a sample image that simulates the try-on result.
+        </div>
+
+        <div class="test-section">
+            <h3>Test Canvas</h3>
+            <canvas id="testCanvas" width="400" height="300"></canvas>
+            <div class="status" id="canvasStatus">Canvas Status: Not initialized</div>
+        </div>
+
+        <div class="test-section">
+            <h3>Download Tests</h3>
+            <button onclick="downloadBasic()">Basic Download (tryon.png)</button>
+            <button onclick="downloadWithTimestamp()">Download with Timestamp</button>
+            <button onclick="downloadHighQuality()">Download High Quality</button>
+            <button onclick="downloadWithFallback()">Download with Fallback</button>
+            <div class="status" id="downloadStatus">Ready to test downloads</div>
+        </div>
+
+        <div class="test-section">
+            <h3>Browser Compatibility Info</h3>
+            <div id="browserInfo"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <ul id="testResults"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Initialize test canvas with sample content
+        function initCanvas() {
+            const canvas = document.getElementById('testCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Create a sample image that simulates try-on result
+            ctx.fillStyle = '#e3f2fd';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw a face outline
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(200, 150, 80, 0, 2 * Math.PI);
+            ctx.stroke();
+            
+            // Draw glasses frame
+            ctx.strokeStyle = '#000';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            // Left lens
+            ctx.arc(170, 130, 25, 0, 2 * Math.PI);
+            ctx.stroke();
+            // Right lens
+            ctx.beginPath();
+            ctx.arc(230, 130, 25, 0, 2 * Math.PI);
+            ctx.stroke();
+            // Bridge
+            ctx.beginPath();
+            ctx.moveTo(195, 130);
+            ctx.lineTo(205, 130);
+            ctx.stroke();
+            // Arms
+            ctx.beginPath();
+            ctx.moveTo(145, 130);
+            ctx.lineTo(120, 125);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(255, 130);
+            ctx.lineTo(280, 125);
+            ctx.stroke();
+            
+            // Add text
+            ctx.fillStyle = '#333';
+            ctx.font = '16px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Virtual Glasses Try-On', 200, 250);
+            ctx.font = '12px Arial';
+            ctx.fillText('Test Image - ' + new Date().toLocaleString(), 200, 280);
+            
+            document.getElementById('canvasStatus').textContent = 'Canvas Status: ✅ Initialized with test content';
+            document.getElementById('canvasStatus').style.color = '#28a745';
+        }
+
+        // Enhanced download functions
+        function downloadBasic() {
+            const canvas = document.getElementById('testCanvas');
+            const button = event.target;
+            const filename = 'tryon.png';
+            
+            try {
+                updateStatus('downloadStatus', '⏳ Starting basic download...', '#ffc107');
+                
+                const dataURL = canvas.toDataURL('image/png', 1.0);
+                const link = document.createElement('a');
+                link.download = filename;
+                link.href = dataURL;
+                link.click();
+                
+                addTestResult('✅ Basic Download', 'Success - Downloaded as ' + filename);
+                updateStatus('downloadStatus', '✅ Basic download completed!', '#28a745');
+                showButtonFeedback(button, '✅ Downloaded!', '#28a745');
+                
+            } catch (error) {
+                addTestResult('❌ Basic Download', 'Failed: ' + error.message);
+                updateStatus('downloadStatus', '❌ Basic download failed: ' + error.message, '#dc3545');
+                showButtonFeedback(button, '❌ Failed', '#dc3545');
+            }
+        }
+
+        function downloadWithTimestamp() {
+            const canvas = document.getElementById('testCanvas');
+            const button = event.target;
+            
+            try {
+                updateStatus('downloadStatus', '⏳ Starting timestamped download...', '#ffc107');
+                
+                const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+                const filename = `tryon-${timestamp}.png`;
+                const dataURL = canvas.toDataURL('image/png', 1.0);
+                
+                downloadWithLink(dataURL, filename);
+                
+                addTestResult('✅ Timestamped Download', 'Success - Downloaded as ' + filename);
+                updateStatus('downloadStatus', '✅ Timestamped download completed!', '#28a745');
+                showButtonFeedback(button, '✅ Downloaded!', '#28a745');
+                
+            } catch (error) {
+                addTestResult('❌ Timestamped Download', 'Failed: ' + error.message);
+                updateStatus('downloadStatus', '❌ Timestamped download failed: ' + error.message, '#dc3545');
+                showButtonFeedback(button, '❌ Failed', '#dc3545');
+            }
+        }
+
+        function downloadHighQuality() {
+            const canvas = document.getElementById('testCanvas');
+            const button = event.target;
+            
+            try {
+                updateStatus('downloadStatus', '⏳ Starting high quality download...', '#ffc107');
+                
+                const filename = 'tryon-hq.png';
+                const dataURL = canvas.toDataURL('image/png', 1.0); // Maximum quality
+                
+                downloadWithBlob(dataURL, filename);
+                
+                addTestResult('✅ High Quality Download', 'Success - Downloaded as ' + filename + ' (PNG, 100% quality)');
+                updateStatus('downloadStatus', '✅ High quality download completed!', '#28a745');
+                showButtonFeedback(button, '✅ Downloaded!', '#28a745');
+                
+            } catch (error) {
+                addTestResult('❌ High Quality Download', 'Failed: ' + error.message);
+                updateStatus('downloadStatus', '❌ High quality download failed: ' + error.message, '#dc3545');
+                showButtonFeedback(button, '❌ Failed', '#dc3545');
+            }
+        }
+
+        function downloadWithFallback() {
+            const canvas = document.getElementById('testCanvas');
+            const button = event.target;
+            
+            try {
+                updateStatus('downloadStatus', '⏳ Testing fallback download methods...', '#ffc107');
+                
+                const filename = 'tryon-fallback.png';
+                const dataURL = canvas.toDataURL('image/png', 1.0);
+                
+                // Try multiple methods
+                if (isBrowserSupportsDownload()) {
+                    downloadWithLink(dataURL, filename);
+                    addTestResult('✅ Fallback Download', 'Used primary method (download attribute)');
+                } else if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                    downloadWithBlob(dataURL, filename);
+                    addTestResult('✅ Fallback Download', 'Used IE/Edge method (msSaveOrOpenBlob)');
+                } else {
+                    // Last resort - open in new window
+                    const newWindow = window.open(dataURL, '_blank');
+                    if (newWindow) {
+                        addTestResult('⚠️ Fallback Download', 'Opened in new window (manual save required)');
+                    } else {
+                        throw new Error('All download methods failed');
+                    }
+                }
+                
+                updateStatus('downloadStatus', '✅ Fallback download completed!', '#28a745');
+                showButtonFeedback(button, '✅ Downloaded!', '#28a745');
+                
+            } catch (error) {
+                addTestResult('❌ Fallback Download', 'Failed: ' + error.message);
+                updateStatus('downloadStatus', '❌ Fallback download failed: ' + error.message, '#dc3545');
+                showButtonFeedback(button, '❌ Failed', '#dc3545');
+            }
+        }
+
+        // Helper functions (same as in the main app)
+        function isBrowserSupportsDownload() {
+            const link = document.createElement('a');
+            return typeof link.download !== 'undefined';
+        }
+
+        function downloadWithLink(dataURL, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = dataURL;
+            document.body.appendChild(link);
+            link.click();
+            setTimeout(() => {
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(link.href);
+            }, 100);
+        }
+
+        function downloadWithBlob(dataURL, filename) {
+            const byteString = atob(dataURL.split(',')[1]);
+            const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+            
+            const buffer = new ArrayBuffer(byteString.length);
+            const data = new Uint8Array(buffer);
+            
+            for (let i = 0; i < byteString.length; i++) {
+                data[i] = byteString.charCodeAt(i);
+            }
+            
+            const blob = new Blob([buffer], { type: mimeString });
+            
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                window.navigator.msSaveOrOpenBlob(blob, filename);
+            } else if (window.URL && window.URL.createObjectURL) {
+                const blobURL = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = blobURL;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(blobURL);
+            } else {
+                throw new Error('Blob download not supported');
+            }
+        }
+
+        function updateStatus(elementId, message, color = '#333') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.style.color = color;
+        }
+
+        function addTestResult(title, description) {
+            const resultsList = document.getElementById('testResults');
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `<strong>${title}:</strong> ${description}`;
+            listItem.style.margin = '5px 0';
+            resultsList.appendChild(listItem);
+        }
+
+        function showButtonFeedback(button, text, color) {
+            const originalText = button.textContent;
+            button.textContent = text;
+            button.style.backgroundColor = color;
+            button.disabled = true;
+            
+            setTimeout(() => {
+                button.textContent = originalText;
+                button.style.backgroundColor = '';
+                button.disabled = false;
+            }, 2000);
+        }
+
+        function checkBrowserCapabilities() {
+            const info = document.getElementById('browserInfo');
+            const capabilities = [];
+            
+            // Check download attribute support
+            const link = document.createElement('a');
+            if (typeof link.download !== 'undefined') {
+                capabilities.push('✅ Download attribute supported');
+            } else {
+                capabilities.push('❌ Download attribute not supported');
+            }
+            
+            // Check Blob support
+            if (window.Blob) {
+                capabilities.push('✅ Blob API supported');
+            } else {
+                capabilities.push('❌ Blob API not supported');
+            }
+            
+            // Check URL.createObjectURL support
+            if (window.URL && window.URL.createObjectURL) {
+                capabilities.push('✅ URL.createObjectURL supported');
+            } else {
+                capabilities.push('❌ URL.createObjectURL not supported');
+            }
+            
+            // Check Canvas toDataURL support
+            const canvas = document.createElement('canvas');
+            if (canvas.toDataURL) {
+                capabilities.push('✅ Canvas toDataURL supported');
+            } else {
+                capabilities.push('❌ Canvas toDataURL not supported');
+            }
+            
+            // Check IE/Edge support
+            if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+                capabilities.push('✅ IE/Edge msSaveOrOpenBlob supported');
+            } else {
+                capabilities.push('❌ IE/Edge msSaveOrOpenBlob not supported');
+            }
+            
+            // Display browser info
+            info.innerHTML = `
+                <strong>Browser:</strong> ${navigator.userAgent.split(')')[0]})
+                <br><strong>Capabilities:</strong>
+                <ul>${capabilities.map(cap => `<li>${cap}</li>`).join('')}</ul>
+            `;
+        }
+
+        // Initialize everything when page loads
+        window.onload = function() {
+            initCanvas();
+            checkBrowserCapabilities();
+            updateStatus('downloadStatus', '🚀 Ready to test downloads', '#17a2b8');
+        };
+    </script>
+</body>
+</html>

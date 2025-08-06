@@ -313,10 +313,131 @@ class StaticImageProcessor {
   }
 
   downloadResult() {
+    try {
+      // Generate filename with timestamp for uniqueness
+      const timestamp = new Date().toISOString().slice(0, 19).replace(/:/g, '-');
+      const filename = `tryon-${timestamp}.png`;
+      
+      // Get canvas data as PNG
+      const dataURL = this.canvas.toDataURL('image/png', 1.0);
+      
+      // Check if browser supports download attribute
+      if (this.isBrowserSupportsDownload()) {
+        this.downloadWithLink(dataURL, filename);
+      } else {
+        // Fallback for older browsers or mobile
+        this.downloadWithBlob(dataURL, filename);
+      }
+      
+      console.log(`✅ Downloaded try-on result as: ${filename}`);
+      
+      // Optional: Show success feedback to user
+      this.showDownloadFeedback();
+      
+    } catch (error) {
+      console.error('❌ Download failed:', error);
+      this.showDownloadError(error.message);
+    }
+  }
+
+  // Check if browser supports download attribute
+  isBrowserSupportsDownload() {
     const link = document.createElement('a');
-    link.download = 'glasses-try-on-result.png';
-    link.href = this.canvas.toDataURL();
+    return typeof link.download !== 'undefined';
+  }
+
+  // Primary download method using anchor element
+  downloadWithLink(dataURL, filename) {
+    const link = document.createElement('a');
+    link.download = filename;
+    link.href = dataURL;
+    
+    // Add to DOM temporarily for better compatibility
+    document.body.appendChild(link);
+    
+    // Trigger download
     link.click();
+    
+    // Clean up
+    setTimeout(() => {
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(link.href);
+    }, 100);
+  }
+
+  // Alternative download method using Blob for better mobile support
+  downloadWithBlob(dataURL, filename) {
+    // Convert data URL to blob
+    const byteString = atob(dataURL.split(',')[1]);
+    const mimeString = dataURL.split(',')[0].split(':')[1].split(';')[0];
+    
+    const buffer = new ArrayBuffer(byteString.length);
+    const data = new Uint8Array(buffer);
+    
+    for (let i = 0; i < byteString.length; i++) {
+      data[i] = byteString.charCodeAt(i);
+    }
+    
+    const blob = new Blob([buffer], { type: mimeString });
+    
+    // Use different methods based on browser capabilities
+    if (window.navigator && window.navigator.msSaveOrOpenBlob) {
+      // IE/Edge support
+      window.navigator.msSaveOrOpenBlob(blob, filename);
+    } else if (window.URL && window.URL.createObjectURL) {
+      // Modern browsers
+      const blobURL = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobURL;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobURL);
+    } else {
+      // Fallback: open in new window (user can save manually)
+      const newWindow = window.open(dataURL, '_blank');
+      if (!newWindow) {
+        throw new Error('Download failed. Please allow popups and try again.');
+      }
+    }
+  }
+
+  // Show success feedback to user
+  showDownloadFeedback() {
+    const button = this.downloadBtn;
+    const originalText = button.textContent;
+    
+    // Temporarily change button text to show success
+    button.textContent = '✅ Downloaded!';
+    button.style.backgroundColor = '#4CAF50';
+    button.disabled = true;
+    
+    // Reset after 2 seconds
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.style.backgroundColor = '';
+      button.disabled = false;
+    }, 2000);
+  }
+
+  // Show error feedback to user
+  showDownloadError(errorMessage) {
+    const button = this.downloadBtn;
+    const originalText = button.textContent;
+    
+    // Temporarily change button text to show error
+    button.textContent = '❌ Download Failed';
+    button.style.backgroundColor = '#f44336';
+    
+    // Show error message to user
+    alert(`Download failed: ${errorMessage}\n\nPlease try again or check your browser settings.`);
+    
+    // Reset after 3 seconds
+    setTimeout(() => {
+      button.textContent = originalText;
+      button.style.backgroundColor = '';
+    }, 3000);
   }
 
   resetProcessor() {
