@@ -9,7 +9,9 @@
   "scripts": {
     "serve": "webpack serve",
     "build-dev": "webpack --mode development",
-    "build-prod": "webpack --mode production"
+    "build-prod": "webpack --mode production",
+    "setup-db": "node setupDatabase.js",
+    "test-db": "node -e \"require('./database.js').testConnection().then(() => process.exit(0))\""
   },
   "dependencies": {
     "@mediapipe/camera_utils": "^0.3.1640029074",
@@ -17,6 +19,7 @@
     "@mediapipe/drawing_utils": "^0.3.1620248257",
     "@mediapipe/face_mesh": "^0.4.1633559619",
     "core-js": "2",
+    "mysql2": "^3.14.3",
     "three": "^0.174.0"
   },
   "devDependencies": {
